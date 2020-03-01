@@ -7,7 +7,8 @@ var nave = {
     x: 100,
     y: canvas.height - 100,
     width: 50,
-    height: 50
+    height: 50,
+    cont: 0
 }
 var game = {
     state: 'iniciando'
@@ -109,6 +110,17 @@ function moveSpaceShip() {
     }
     else {
         teclado.fire = false
+    }
+    if(nave.state == 'hit') {
+        nave.cont++
+        if(nave.cont >= 20) {
+            nave.cont = 0
+            nave.state = 'muerto'
+            game.state = 'over'
+            textAnswer.title = 'Game over'
+            textAnswer.subtitle = 'Presionar R para continuar'
+            textAnswer.cont = 0
+        }
     }
 }
 
@@ -246,6 +258,11 @@ function updateStateGame() {
     }
     if(textAnswer.cont >= 0) {
         textAnswer.cont++
+    }
+    if((game.state == 'over' || game.state == 'win') && teclado[82]) {
+        game.state = 'iniciando'
+        nave.state = 'vivo'
+        textAnswer.cont = -1
     }
 }
 
