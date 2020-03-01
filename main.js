@@ -16,6 +16,7 @@ var teclado = {}
 
 // Array para los disparos
 var disparos = []
+var disparosEnemies = []
 
 // Array para almacenar enemigos
 var enemies = []
@@ -106,7 +107,36 @@ function moveSpaceShip() {
     }
 }
 
+function drawShootEnemy() {
+    for(var i in disparosEnemies) {
+        var disparo = disparosEnemies[i]
+        ctx.save()
+        ctx.fillStyle = 'yellow'
+        ctx.fillRect(disparo.x, disparo.y, disparo.width, disparo.height)
+        ctx.restore()
+    }
+}
+
+function moveShootEnemies() {
+    for(var i in disparosEnemies) {
+        var disparo = disparosEnemies[i]
+        disparo.y += 3
+    }
+    disparosEnemies = disparosEnemies.filter(function(disparo) {
+        return disparo.y < canvas.height;
+    })
+}
+
 function updateEnemy() {
+    function addShootEnemies(enemy) {
+        return {
+            x: enemy.x,
+            y: enemy.y,
+            width: 10,
+            height: 33,
+            cont: 0
+        }
+    }
     if(game.state == 'iniciando') {
         for(var i = 0; i<10; i++) {
             enemies.push({
@@ -126,6 +156,10 @@ function updateEnemy() {
         if(enemy && enemy.state == 'vivo') {
             enemy.cont++
             enemy.x += Math.sin(enemy.cont * Math.PI/90)*5
+
+            if(aleatorio(0, enemies.length * 10) == 4) {
+                disparosEnemies.push(addShootEnemies(enemy))
+            }
         }
         if(enemy && enemy.state == 'hit') {
             enemy.cont++
@@ -204,14 +238,23 @@ function verifyHit() {
     }
 }
 
+function aleatorio(inferior, superior) {
+    var posibility = superior - inferior
+    var numberAleatorio = Math.random() * posibility
+    numberAleatorio = Math.floor(numberAleatorio)
+    return parseInt(inferior) + numberAleatorio
+}
+
 function frameLoop() {
     moveSpaceShip()
     moveShoot()
+    moveShootEnemies()
     updateEnemy()
     drawBackground()
     drawSpaceShip()
     drawShoot()
     drawEnemy()
+    drawShootEnemy()
     verifyHit()
 }
 
