@@ -13,6 +13,11 @@ var game = {
     state: 'iniciando'
 }
 var teclado = {}
+var textAnswer = {
+    cont : -1,
+    title: '',
+    subtitle: ''
+}
 
 // Array para los disparos
 var disparos = []
@@ -148,7 +153,7 @@ function updateEnemy() {
                 cont: 0
             })
         }
-        game.state = 'jugando'
+        game.state = 'playing'
     }
     for(var i in enemies) {
         var enemy = enemies[i]
@@ -205,6 +210,45 @@ function drawShoot() {
     ctx.restore()
 }
 
+function drawText() {
+    if(textAnswer.cont == -1) return
+    var alpha = textAnswer.cont / 50.0
+    if(alpha > 1) {
+        for(var i in enemies) {
+            delete enemies[i]
+        }
+    }
+    ctx.save()
+    ctx.globalAlpha = alpha
+    if(game.state == 'over') {
+        ctx.fillStyle = 'white'
+        ctx.font = 'Bold 40pt Arial'
+        ctx.fillText(textAnswer.title, 140, 200)
+        ctx.font = '14pt Arial'
+        ctx.fillText(textAnswer.subtitle, 190, 250)
+    }
+    if(game.state == 'win') {
+        ctx.fillStyle = 'white'
+        ctx.font = 'Bold 40pt Arial'
+        ctx.fillText(textAnswer.title, 140, 200)
+        ctx.font = '14pt Arial'
+        ctx.fillText(textAnswer.subtitle, 190, 250)
+    }
+    ctx.restore()
+}
+
+function updateStateGame() {
+    if(game.state == 'playing' && enemies.length == 0) {
+        game.state = 'win'
+        textAnswer.title = 'Venciste a todos los enemigos'
+        textAnswer.subtitle = 'Presiona R para continuar'
+        textAnswer.cont = 0
+    }
+    if(textAnswer.cont >= 0) {
+        textAnswer.cont++
+    }
+}
+
 function hit(a, b) {
     var hit = false
     if(b.x + b.width >= a.x && b.x < a.x + a.width) {
@@ -236,6 +280,13 @@ function verifyHit() {
             }
         }
     }
+    if(nave.state == 'hit' || nave.state == 'muerto') return
+    for(var i in disparosEnemies) {
+        var disparo = disparosEnemies[i]
+        if(hit(disparo, nave)) {
+            nave.state = 'hit'
+        }
+    }
 }
 
 function aleatorio(inferior, superior) {
@@ -246,6 +297,7 @@ function aleatorio(inferior, superior) {
 }
 
 function frameLoop() {
+    updateStateGame()
     moveSpaceShip()
     moveShoot()
     moveShootEnemies()
@@ -255,6 +307,7 @@ function frameLoop() {
     drawShoot()
     drawEnemy()
     drawShootEnemy()
+    drawText()
     verifyHit()
 }
 
