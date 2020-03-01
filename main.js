@@ -114,11 +114,32 @@ function updateEnemy() {
                 y: 10,
                 width: 40,
                 height: 40,
-                state: 'vivo'
+                state: 'vivo',
+                cont: 0
             })
         }
         game.state = 'jugando'
     }
+    for(var i in enemies) {
+        var enemy = enemies[i]
+        if(!enemy) continue
+        if(enemy && enemy.state == 'vivo') {
+            enemy.cont++
+            enemy.x += Math.sin(enemy.cont * Math.PI/90)*5
+        }
+        if(enemy && enemy.state == 'hit') {
+            enemy.cont++
+            if(enemy.cont >= 20) {
+                enemy.state = 'muerto'
+                enemy.cont = 0
+            }
+        }
+    }
+
+    enemies = enemies.filter(function(enemy) {
+        if(enemy && enemy.state != 'muerto') return true
+        return false
+    })
 }
 
 function moveShoot() {
@@ -150,6 +171,39 @@ function drawShoot() {
     ctx.restore()
 }
 
+function hit(a, b) {
+    var hit = false
+    if(b.x + b.width >= a.x && b.x < a.x + a.width) {
+        if(b.y + b.height >= a.y && b.y < a.y + a.height) {
+            hit = true
+        }
+    }   
+    if(b.x <= a.x && b.x + b.width >= a.x + a.width) {
+        if(b.y <= a.y && b.y + b.height >= a.y + a.height) {
+            hit = true
+        }
+    }
+    if(a.x <= b.x && a.x + a.width >= b.x + b.width) {
+        if(a.y <= b.y && a.y + a.height >= b.y + b.height) {
+            hit = true
+        }
+    }
+    return hit
+}
+
+function verifyHit() {
+    for(var i in disparos) {
+        var disparo = disparos[i]
+        for(j in enemies) {
+            var enemy = enemies[j]
+            if(hit(disparo, enemy)) {
+                enemy.state = 'hit'
+                enemy.cont = 0 
+            }
+        }
+    }
+}
+
 function frameLoop() {
     moveSpaceShip()
     moveShoot()
@@ -158,6 +212,7 @@ function frameLoop() {
     drawSpaceShip()
     drawShoot()
     drawEnemy()
+    verifyHit()
 }
 
 // Ejecucion de funciones
