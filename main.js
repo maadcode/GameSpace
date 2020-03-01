@@ -9,10 +9,16 @@ var nave = {
     width: 50,
     height: 50
 }
+var game = {
+    state: 'iniciando'
+}
 var teclado = {}
 
 // Array para los disparos
 var disparos = []
+
+// Array para almacenar enemigos
+var enemies = []
 
 // Definir variables para imagenes
 var fondo
@@ -23,6 +29,20 @@ function loadMedia() {
     fondo.src = './assets/space.jpg'
     fondo.onload = function() {
         var intervalo = window.setInterval(frameLoop, 1000/55)
+    }
+}
+
+function drawEnemy() {
+    for(var i in enemies) {
+        var enemy = enemies[i]
+        ctx.save()
+        if(enemy.state == 'vivo') {
+            ctx.fillStyle = 'red'
+        }
+        if(enemy.state == 'muerto') {
+            ctx.fillStyle = 'black'
+        }
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height)
     }
 }
 
@@ -86,6 +106,21 @@ function moveSpaceShip() {
     }
 }
 
+function updateEnemy() {
+    if(game.state == 'iniciando') {
+        for(var i = 0; i<10; i++) {
+            enemies.push({
+                x: 10 + (i*50),
+                y: 10,
+                width: 40,
+                height: 40,
+                state: 'vivo'
+            })
+        }
+        game.state = 'jugando'
+    }
+}
+
 function moveShoot() {
     for(var i in disparos) {
         var disparo = disparos[i]
@@ -118,9 +153,11 @@ function drawShoot() {
 function frameLoop() {
     moveSpaceShip()
     moveShoot()
+    updateEnemy()
     drawBackground()
     drawSpaceShip()
     drawShoot()
+    drawEnemy()
 }
 
 // Ejecucion de funciones
