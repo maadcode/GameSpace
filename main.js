@@ -8,6 +8,7 @@ var nave = {
     width: 50,
     height: 50
 }
+var teclado = {}
 // Definir variables para imagenes
 var fondo
 // Definir funciones
@@ -30,6 +31,27 @@ function drawSpaceShip() {
     ctx.restore()
 }
 
+function addEventKeyboard() {
+    addEvents(document, "keydown", function(e) {
+        //Colocamos true la tecla presionada
+        teclado[e.keyCode] = true;
+    })
+    addEvents(document, "keyup", function(e) {
+        //Colocamos false la tecla soltada
+        teclado[e.keyCode] = false;
+    })
+    function addEvents(elemento, nombreEvento, funcion) {
+        if(elemento.addEventListener) {
+            //Chrome
+            elemento.addEventListener(nombreEvento, funcion, false)
+        }
+        else if(elemento.attachEvent) {
+            //Explorer
+            elemento.attachEvent(nombreEvento, funcion)
+        }
+    }
+}
+
 function frameLoop() {
     drawBackground()
     drawSpaceShip()
@@ -37,3 +59,4 @@ function frameLoop() {
 
 // Ejecucion de funciones
 loadMedia()
+addEventKeyboard()
