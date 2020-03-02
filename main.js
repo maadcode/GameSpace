@@ -28,14 +28,58 @@ var disparosEnemies = []
 var enemies = []
 
 // Definir variables para imagenes
-var fondo
+var fondo, imgNave, imgEnemy, imgShoot, imgShootEnemy
+var imagenes = ['monster.png', 'spaceShip.png', 'enemyLaser.png', 'laser.png', 'space.jpg']
+var soundShoot, soundEnemyShoot, soundDeadSpace, soundDeadEnemy, soundGameOver
+var preloader
 
 // Definir funciones
 function loadMedia() {
-    fondo = new Image()
-    fondo.src = './assets/space.jpg'
-    fondo.onload = function() {
-        var intervalo = window.setInterval(frameLoop, 1000/55)
+    preloader = new PreloadJS()
+    preloader.onProgress = progresoCarga
+    cargar()
+}
+
+function cargar() {
+    while(imagenes.length > 0) {
+        var imagen = imagenes.shift()
+        preloader.loadFile(imagen)
+    }
+}
+
+function progresoCarga() {
+    console.log(parseInt(preloader.progress * 100)+'%');
+    if(preloader.progress == 1) {
+        var interval = window.setInterval(frameLoop, 1000/300)
+
+        // Colocando imagenes
+        fondo = new Image()
+        fondo.src = 'space.jpg'
+        imgNave = new Image()
+        imgNave.src = 'spaceShip.png'
+        imgEnemy = new Image()
+        imgEnemy.src = 'monster.png'
+        imgShoot = new Image()
+        imgShoot.src = 'laser.png'
+        imgShootEnemy = new Image()
+        imgShootEnemy.src = 'enemyLaser.png'
+
+        // Colocando audios
+        soundShoot = document.createElement('audio')
+        document.body.appendChild(soundShoot)
+        soundShoot.setAttribute('src', 'laserSpace.mp3', )
+        soundEnemyShoot = document.createElement('audio')
+        document.body.appendChild(soundEnemyShoot)
+        soundEnemyShoot.setAttribute('src', 'laserAlien.mp3', )
+        soundDeadSpace = document.createElement('audio')
+        document.body.appendChild(soundDeadSpace)
+        soundDeadSpace.setAttribute('src', 'deadspaceShip.mp3', )
+        soundDeadEnemy = document.createElement('audio')
+        document.body.appendChild(soundDeadEnemy)
+        soundDeadEnemy.setAttribute('src', 'deadInvader.mp3', )
+        soundGameOver = document.createElement('audio')
+        document.body.appendChild(soundGameOver)
+        soundGameOver.setAttribute('src', 'endGame.mp3', )
     }
 }
 
@@ -49,7 +93,7 @@ function drawEnemy() {
         if(enemy.state == 'muerto') {
             ctx.fillStyle = 'black'
         }
-        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height)
+        ctx.drawImage(imgEnemy, enemy.x, enemy.y, enemy.width, enemy.height)
     }
 }
 
@@ -59,8 +103,7 @@ function drawBackground() {
 
 function drawSpaceShip() {
     ctx.save()
-    ctx.fillStyle = 'white'
-    ctx.fillRect(nave.x, nave.y, nave.width, nave.height)
+    ctx.drawImage(imgNave, nave.x, nave.y, nave.width, nave.height)
     ctx.restore()
 }
 
@@ -128,8 +171,7 @@ function drawShootEnemy() {
     for(var i in disparosEnemies) {
         var disparo = disparosEnemies[i]
         ctx.save()
-        ctx.fillStyle = 'yellow'
-        ctx.fillRect(disparo.x, disparo.y, disparo.width, disparo.height)
+        ctx.drawImage(imgShootEnemy, disparo.x, disparo.y, disparo.width, disparo.height)
         ctx.restore()
     }
 }
@@ -137,7 +179,7 @@ function drawShootEnemy() {
 function moveShootEnemies() {
     for(var i in disparosEnemies) {
         var disparo = disparosEnemies[i]
-        disparo.y += 3
+        disparo.y += 7
     }
     disparosEnemies = disparosEnemies.filter(function(disparo) {
         return disparo.y < canvas.height;
@@ -175,6 +217,9 @@ function updateEnemy() {
             enemy.x += Math.sin(enemy.cont * Math.PI/90)*5
 
             if(aleatorio(0, enemies.length * 10) == 4) {
+                soundEnemyShoot.pause()
+                soundEnemyShoot.currentTime = 0
+                soundEnemyShoot.play()
                 disparosEnemies.push(addShootEnemies(enemy))
             }
         }
@@ -204,6 +249,9 @@ function moveShoot() {
 }
 
 function fire() {
+    soundShoot.pause()
+    soundShoot.currentTime = 0
+    soundShoot.play()
     disparos.push({
         x: nave.x + 20,
         y: nave.y - 10,
@@ -214,10 +262,9 @@ function fire() {
 
 function drawShoot() {
     ctx.save()
-    ctx.fillStyle = 'white'
     for(var i in disparos) {
         var disparo = disparos[i]
-        ctx.fillRect(disparo.x, disparo.y, disparo.width, disparo.height)
+        ctx.drawImage(imgShoot, disparo.x, disparo.y, disparo.width, disparo.height)
     }
     ctx.restore()
 }
@@ -292,6 +339,9 @@ function verifyHit() {
         for(j in enemies) {
             var enemy = enemies[j]
             if(hit(disparo, enemy)) {
+                soundDeadEnemy.pause()
+                soundDeadEnemy.currentTime = 0
+                soundDeadEnemy.play()
                 enemy.state = 'hit'
                 enemy.cont = 0 
             }
@@ -301,6 +351,9 @@ function verifyHit() {
     for(var i in disparosEnemies) {
         var disparo = disparosEnemies[i]
         if(hit(disparo, nave)) {
+            soundDeadSpace.pause()
+            soundDeadSpace.currentTime = 0
+            soundDeadSpace.play()
             nave.state = 'hit'
         }
     }
@@ -329,5 +382,9 @@ function frameLoop() {
 }
 
 // Ejecucion de funciones
-loadMedia()
-addEventKeyboard()
+window.addEventListener('load', init)
+
+function init() {
+    loadMedia()
+    addEventKeyboard()
+}
